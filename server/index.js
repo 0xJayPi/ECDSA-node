@@ -1,3 +1,8 @@
+const secp = require("ethereum-cryptography/secp256k1");
+const { toHex, hexToBytes } = require("ethereum-cryptography/utils");
+const { keccak256 } = require("ethereum-cryptography/keccak");
+const { utf8ToBytes } = require("ethereum-cryptography/utils");
+
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -19,10 +24,12 @@ app.get("/balance/:address", (req, res) => {
 });
 
 app.post("/send", (req, res) => {
-  // TODO: get a signature form your client-side app
-  // recover public address from such signature
+  const { signature, bit, recipient, amount } = req.body;
 
-  const { sender, recipient, amount } = req.body;
+  const messageSent = keccak256(utf8ToBytes("Sarlanga!"));
+  const sender = toHex(
+    secp.recoverPublicKey(messageSent, hexToBytes(signature), bit)
+  );
 
   setInitialBalance(sender);
   setInitialBalance(recipient);

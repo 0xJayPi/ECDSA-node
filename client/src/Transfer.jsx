@@ -1,20 +1,31 @@
 import { useState } from "react";
 import server from "./server";
 
-function Transfer({ address, setBalance }) {
+import * as secp from "ethereum-cryptography/secp256k1";
+import { toHex} from "ethereum-cryptography/utils";
+import { keccak256 } from "ethereum-cryptography/keccak";
+import { utf8ToBytes } from "ethereum-cryptography/utils";
+
+function Transfer({ setBalance, privateKey }) {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
+  // const [signature, setSignature] = useState("");
+  // const [bit, setBit] = useState(0);
 
   const setValue = (setter) => (evt) => setter(evt.target.value);
 
   async function transfer(evt) {
     evt.preventDefault();
 
+    const messageSent = keccak256(utf8ToBytes("Sarlanga!"));
+    const [signature, bit] = await secp.sign(messageSent, privateKey, { recovered: true });
+
     try {
       const {
         data: { balance },
       } = await server.post(`send`, {
-        sender: address,
+        signature: toHex(signature),
+        bit: bit,
         amount: parseInt(sendAmount),
         recipient,
       });
@@ -24,6 +35,7 @@ function Transfer({ address, setBalance }) {
     }
   }
 
+  console.log("(Transfer) Post sent!" )
   return (
     <form className="container transfer" onSubmit={transfer}>
       <h1>Send Transaction</h1>

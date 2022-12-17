@@ -10,10 +10,14 @@ const PUBLIC_KEY =
 
 async function main() {
   const messageSent = keccak256(utf8ToBytes("Sarlanga!"));
-  const [signature, bit] = await await secp.sign(messageSent, PRIVATE_KEY, {
+  const [signature, bit] = await secp.sign(messageSent, PRIVATE_KEY, {
     recovered: true,
   });
   const publicKey = toHex(secp.recoverPublicKey(messageSent, signature, bit));
+
+  console.log(signature);
+  console.log(`Recovery Bit is ${bit}`);
+  console.log(publicKey);
 
   if (publicKey === PUBLIC_KEY) {
     console.log("Matched!!!");
